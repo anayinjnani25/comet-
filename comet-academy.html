@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comet Academy</title>
+  <style>
+    /* ─────────────────────────────────────────────
+       ROOT VARIABLES  —  edit colours/fonts here
+    ───────────────────────────────────────────── */
+    :root {
+      --night:   #08090d;
+      --deep:    #0e1120;
+      --card-bg: #131629;
+      --glass:   rgba(255,255,255,0.04);
+      --border:  rgba(255,255,255,0.08);
+      --gold:    #f5c842;
+      --cyan:    #38d9f5;
+      --text:    #e8eaf0;
+      --muted:   #7a7f99;
+      --radius:  16px;
+      --font-head: Georgia, 'Times New Roman', serif;
+      --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+      --transition: .35s cubic-bezier(.22,.68,0,1.2);
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--night);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    img { display: block; max-width: 100%; }
+    a  { color: inherit; text-decoration: none; }
+
+    /* ── STAR CANVAS ── */
+    #star-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .55;
+    }
+
+    /* ── SHARED WRAPPERS ── */
+    .section { position: relative; z-index: 1; padding: 90px 24px; }
+    .container { max-width: 1140px; margin: 0 auto; }
+    .section-label {
+      display: inline-block;
+      font-size: .72rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(245,200,66,.1);
+      border: 1px solid rgba(245,200,66,.25);
+      border-radius: 100px;
+      padding: 4px 14px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-family: var(--font-head);
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 560px;
+    }
+    .divider {
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+      border-radius: 4px;
+      margin: 20px 0 40px;
+    }
+
+    /* ══════════════════════════════════════════
+       1. HERO
+    ══════════════════════════════════════════ */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 100px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%,
+                    rgba(56,217,245,.12) 0%,
+                    transparent 70%),
+                  radial-gradient(ellipse 60% 50% at 80% 80%,
+                    rgba(245,200,66,.07) 0%,
+                    transparent 65%),
+                  var(--deep);
+      overflow: hidden;
+    }
+    /* Geometric ring decoration */
+    #hero::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border: 1px solid rgba(56,217,245,.1);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: pulse-ring 6s ease-in-out infinite;
+    }
+    #hero::after {
+      content: '';
+      position: absolute;
+      width: 480px; height: 480px;
+      border: 1px solid rgba(245,200,66,.1);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: pulse-ring 6s ease-in-out 1.5s infinite;
+    }
+    @keyframes pulse-ring {
+      0%,100% { transform: translate(-50%,-50%) scale(1);   opacity:.6; }
+      50%      { transform: translate(-50%,-50%) scale(1.08); opacity:.2; }
+    }
+    .hero-inner { position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: .78rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--cyan); background: rgba(56,217,245,.08);
+      border: 1px solid rgba(56,217,245,.2);
+      border-radius: 100px; padding: 6px 16px;
+      margin-bottom: 28px;
+      animation: fade-up .8s ease both;
+    }
+    .hero-badge span { width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cyan); animation: blink 1.8s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* ── EDIT TEXT HERE ── */
+    .hero-heading {
+      font-family: var(--font-head);
+      font-size: clamp(3rem, 9vw, 6.5rem);
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      background: linear-gradient(135deg, #fff 30%, var(--cyan) 70%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fade-up .9s .15s ease both;
+      margin-bottom: 20px;
+    }
+    /* ── EDIT TAGLINE HERE ── */
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--muted);
+      max-width: 560px; margin: 0 auto 40px;
+      animation: fade-up .9s .3s ease both;
+    }
+    .hero-cta-wrap { animation: fade-up .9s .45s ease both; }
+    /* ── EDIT BUTTON TEXT HERE ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--gold) 0%, #f0a500 100%);
+      color: #0a0a0a;
+      font-weight: 700; font-size: .95rem; letter-spacing: .04em;
+      padding: 15px 36px; border-radius: 100px;
+      border: none; cursor: pointer;
+      box-shadow: 0 0 40px rgba(245,200,66,.3);
+      transition: var(--transition);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 8px 60px rgba(245,200,66,.45);
+    }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-primary .arrow { transition: transform .3s ease; }
+    .btn-primary:hover .arrow { transform: translateX(5px); }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border); color: var(--text);
+      background: transparent;
+      font-size: .95rem; padding: 14px 28px; border-radius: 100px;
+      cursor: pointer; transition: var(--transition); margin-left: 14px;
+    }
+    .btn-ghost:hover { background: var(--glass); border-color: rgba(255,255,255,.2); }
+
+    @keyframes fade-up {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* scroll cue */
+    .scroll-cue {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--muted); font-size: .72rem; letter-spacing: .12em;
+      text-transform: uppercase; animation: fade-up 1s .8s ease both;
+    }
+    .scroll-cue-line {
+      width: 1px; height: 48px;
+      background: linear-gradient(to bottom, var(--cyan), transparent);
+      animation: scroll-pulse 2s ease-in-out infinite;
+    }
+    @keyframes scroll-pulse {
+      0%,100%{ opacity:.3; transform: scaleY(.8); }
+      50%    { opacity:1;  transform: scaleY(1); }
+    }
+
+    /* ══════════════════════════════════════════
+       2. WELCOME
+    ══════════════════════════════════════════ */
+    #welcome { background: var(--night); }
+    .welcome-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    @media(max-width: 768px) {
+      .welcome-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+    /* ── EDIT IMAGE HERE ── */
+    .welcome-img-wrap {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .welcome-img-wrap img {
+      width: 100%; border-radius: var(--radius);
+      transition: transform .6s ease;
+      filter: brightness(.9);
+    }
+    .welcome-img-wrap:hover img { transform: scale(1.04); }
+    .welcome-img-wrap::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      pointer-events: none;
+    }
+    /* accent badge on image */
+    .img-badge {
+      position: absolute; bottom: 20px; left: 20px;
+      background: rgba(8,9,13,.8); backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 18px;
+      font-size: .82rem; color: var(--text);
+    }
+    .img-badge strong { color: var(--gold); font-size: 1.4rem; display: block; }
+
+    /* ── EDIT TEXT HERE ── */
+    .welcome-text .section-title { margin-bottom: 0; }
+    .welcome-list { list-style: none; margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
+    .welcome-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: .95rem; color: var(--muted);
+    }
+    .welcome-list li::before {
+      content: '✦';
+      color: var(--cyan);
+      font-size: .75rem;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       3. SHOWCASE / FEATURED DESIGNS
+    ══════════════════════════════════════════ */
+    #showcase {
+      background: linear-gradient(180deg, var(--night) 0%, var(--deep) 100%);
+    }
+    .showcase-header { text-align: center; margin-bottom: 56px; }
+    .showcase-header .section-sub { margin: 0 auto; }
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── DUPLICATE THIS CARD BLOCK FOR MORE CARDS ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(56,217,245,.3);
+      box-shadow: 0 24px 60px rgba(0,0,0,.4),
+                  0 0 0 1px rgba(56,217,245,.12);
+    }
+    /* ── EDIT IMAGE HERE ── */
+    .card-img {
+      width: 100%; height: 200px;
+      object-fit: cover;
+      transition: transform .6s ease;
+    }
+    .card:hover .card-img { transform: scale(1.06); }
+    .card-img-wrap { overflow: hidden; position: relative; }
+    .card-tag {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(8,9,13,.75); backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 100px; padding: 4px 12px;
+      font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .card-body { padding: 22px 24px 28px; }
+    /* ── EDIT TITLE HERE ── */
+    .card-title {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    /* ── EDIT DESCRIPTION HERE ── */
+    .card-desc { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+    .card-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--cyan); font-size: .83rem; font-weight: 600;
+      margin-top: 16px; letter-spacing: .04em;
+      transition: gap .25s ease;
+    }
+    .card:hover .card-link { gap: 10px; }
+
+    /* ══════════════════════════════════════════
+       4. COURSES / SERVICES
+    ══════════════════════════════════════════ */
+    #courses { background: var(--deep); }
+    .courses-header { text-align: center; margin-bottom: 56px; }
+    .courses-header .section-sub { margin: 0 auto; }
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── DUPLICATE THIS SERVICE CARD FOR MORE SERVICES ── */
+    .service-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      transition: var(--transition);
+      position: relative; overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, var(--glow,rgba(56,217,245,.12)) 0%, transparent 70%);
+      transition: var(--transition);
+    }
+    .service-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.15);
+    }
+    .service-card:hover::before { transform: scale(1.6); }
+    .service-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: rgba(56,217,245,.1);
+      border: 1px solid rgba(56,217,245,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 22px;
+    }
+    /* ── EDIT SERVICE TITLE HERE ── */
+    .service-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem; margin-bottom: 10px; color: #fff;
+    }
+    /* ── EDIT SERVICE DESCRIPTION HERE ── */
+    .service-desc { font-size: .875rem; color: var(--muted); line-height: 1.7; }
+    .service-num {
+      position: absolute; bottom: 20px; right: 24px;
+      font-size: 4rem; font-weight: 900; line-height: 1;
+      color: rgba(255,255,255,.03);
+      font-family: var(--font-head);
+      user-select: none;
+    }
+
+    /* ══════════════════════════════════════════
+       5. FOOTER
+    ══════════════════════════════════════════ */
+    #footer {
+      background: var(--night);
+      border-top: 1px solid var(--border);
+      padding: 48px 24px;
+    }
+    .footer-inner {
+      max-width: 1140px; margin: 0 auto;
+      display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+      gap: 24px;
+    }
+    .footer-logo {
+      font-family: var(--font-head);
+      font-size: 1.3rem; color: #fff;
+    }
+    .footer-logo span { color: var(--gold); }
+    /* ── EDIT SOCIAL LINKS HERE ── */
+    .footer-socials { display: flex; gap: 12px; }
+    .social-btn {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: .82rem;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .social-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(56,217,245,.08);
+      transform: translateY(-2px);
+    }
+    /* ── EDIT COPYRIGHT TEXT HERE ── */
+    .footer-copy {
+      width: 100%;
+      text-align: center;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ★ STAR FIELD (auto-generated) -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1 – HERO
+  ═══════════════════════════════════════ -->
+  <section id="hero" class="section">
+    <div class="hero-inner">
+
+      <div class="hero-badge">
+        <span></span>
+        <!-- EDIT BADGE TEXT HERE -->
+        Now Enrolling · Summer 2025
+      </div>
+
+      <!-- EDIT MAIN HEADING HERE -->
+      <h1 class="hero-heading">Comet Academy</h1>
+
+      <!-- EDIT TAGLINE HERE -->
+      <p class="hero-sub">
+        Ignite your potential. Learn from the best.
+        Build skills that launch careers into orbit.
+      </p>
+
+      <div class="hero-cta-wrap">
+        <!-- EDIT BUTTON TEXT HERE -->
+        <button class="btn-primary" onclick="this.style.transform='scale(.96)'; setTimeout(()=>this.style.transform='',200)">
+          Explore Courses <span class="arrow">→</span>
+        </button>
+        <!-- EDIT SECONDARY BUTTON HERE -->
+        <button class="btn-ghost">Learn More</button>
+      </div>
+    </div>
+
+    <div class="scroll-cue">
+      Scroll
+      <div class="scroll-cue-line"></div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2 – WELCOME
+  ═══════════════════════════════════════ -->
+  <section id="welcome" class="section">
+    <div class="container">
+      <div class="welcome-grid">
+
+        <!-- LEFT: IMAGE / LOGO -->
+        <div class="welcome-img-wrap">
+          <!-- EDIT IMAGE HERE — change src to your logo or photo -->
+          <img
+            src="https://via.placeholder.com/580x420/0e1120/38d9f5?text=Comet+Academy"
+            alt="Comet Academy"
+          />
+          <div class="img-badge">
+            <!-- EDIT STAT HERE -->
+            <strong>2,400+</strong> Students Enrolled
+          </div>
+        </div>
+
+        <!-- RIGHT: TEXT BLOCK -->
+        <div class="welcome-text">
+          <span class="section-label">About Us</span>
+          <!-- EDIT TITLE HERE -->
+          <h2 class="section-title">Welcome to<br/>Comet Academy</h2>
+          <div class="divider"></div>
+          <!-- EDIT PARAGRAPH HERE -->
+          <p style="color:var(--muted); font-size:.97rem;">
+            Comet Academy is a forward-thinking learning platform dedicated to
+            empowering students with real-world skills in design, technology,
+            and creative leadership. Whether you're starting fresh or levelling
+            up your career, we have a path for you.
+          </p>
+          <!-- EDIT LIST ITEMS HERE — add/remove <li> as needed -->
+          <ul class="welcome-list">
+            <li>Expert-led courses designed for the modern learner</li>
+            <li>Hands-on projects with industry-standard tools</li>
+            <li>Flexible schedules to fit your life</li>
+            <li>A global community of creators and builders</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3 – FEATURED DESIGNS / SHOWCASE
+  ═══════════════════════════════════════ -->
+  <section id="showcase" class="section">
+    <div class="container">
+
+      <div class="showcase-header">
+        <span class="section-label">Student Work</span>
+        <!-- EDIT HEADING HERE -->
+        <h2 class="section-title">Featured Showcase</h2>
+        <div class="divider" style="margin:20px auto 0;"></div>
+        <!-- EDIT SUBHEADING HERE -->
+        <p class="section-sub">
+          A glimpse of the extraordinary work our students produce.
+        </p>
+      </div>
+
+      <div class="showcase-grid">
+
+        <!-- ── CARD 1 — duplicate this block to add more cards ── -->
+        <div class="card">
+          <div class="card-img-wrap">
+            <!-- EDIT IMAGE HERE -->
+            <img class="card-img"
+              src="https://via.placeholder.com/600x400/131629/38d9f5?text=Project+One"
+              alt="Project One"
+            />
+            <!-- EDIT TAG HERE -->
+            <span class="card-tag">UI/UX</span>
+          </div>
+          <div class="card-body">
+            <!-- EDIT CARD TITLE HERE -->
+            <h3 class="card-title">Stellar Dashboard</h3>
+            <!-- EDIT CARD DESCRIPTION HERE -->
+            <p class="card-desc">
+              A sleek analytics dashboard built with modern design principles
+              and real-time data visualisation techniques.
+            </p>
+            <a href="#" class="card-link">View Project →</a>
+          </div>
+        </div>
+
+        <!-- ── CARD 2 ── -->
+        <div class="card">
+          <div class="card-img-wrap">
+            <!-- EDIT IMAGE HERE -->
+            <img class="card-img"
+              src="https://via.placeholder.com/600x400/131629/f5c842?text=Project+Two"
+              alt="Project Two"
+            />
+            <!-- EDIT TAG HERE -->
+            <span class="card-tag">Branding</span>
+          </div>
+          <div class="card-body">
+            <!-- EDIT CARD TITLE HERE -->
+            <h3 class="card-title">Nova Brand Identity</h3>
+            <!-- EDIT CARD DESCRIPTION HERE -->
+            <p class="card-desc">
+              A complete visual identity system — logo, typography, colour
+              palette, and brand guidelines for a fintech startup.
+            </p>
+            <a href="#" class="card-link">View Project →</a>
+          </div>
+        </div>
+
+        <!-- ── CARD 3 ── -->
+        <div class="card">
+          <div class="card-img-wrap">
+            <!-- EDIT IMAGE HERE -->
+            <img class="card-img"
+              src="https://via.placeholder.com/600x400/131629/a78bfa?text=Project+Three"
+              alt="Project Three"
+            />
+            <!-- EDIT TAG HERE -->
+            <span class="card-tag">Development</span>
+          </div>
+          <div class="card-body">
+            <!-- EDIT CARD TITLE HERE -->
+            <h3 class="card-title">Orbit App</h3>
+            <!-- EDIT CARD DESCRIPTION HERE -->
+            <p class="card-desc">
+              A cross-platform productivity app with a focus on habit
+              tracking and personalised goal management.
+            </p>
+            <a href="#" class="card-link">View Project →</a>
+          </div>
+        </div>
+
+        <!-- ── ADD MORE CARDS BY DUPLICATING A CARD BLOCK ABOVE ── -->
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4 – COURSES / SERVICES
+  ═══════════════════════════════════════ -->
+  <section id="courses" class="section">
+    <div class="container">
+
+      <div class="courses-header">
+        <span class="section-label">What We Offer</span>
+        <!-- EDIT HEADING HERE -->
+        <h2 class="section-title">Our Programmes</h2>
+        <div class="divider" style="margin:20px auto 0;"></div>
+        <!-- EDIT SUBHEADING HERE -->
+        <p class="section-sub">
+          Carefully crafted learning tracks built for real career outcomes.
+        </p>
+      </div>
+
+      <div class="courses-grid">
+
+        <!-- ── SERVICE CARD 1 — duplicate to add more ── -->
+        <div class="service-card" style="--glow:rgba(56,217,245,.14)">
+          <!-- EDIT ICON HERE — any emoji or SVG inline -->
+          <div class="service-icon">🎨</div>
+          <!-- EDIT SERVICE TITLE HERE -->
+          <h3 class="service-title">UI/UX Design</h3>
+          <!-- EDIT SERVICE DESCRIPTION HERE -->
+          <p class="service-desc">
+            Master the full design process from user research and wireframing
+            to high-fidelity prototyping in Figma.
+          </p>
+          <span class="service-num">01</span>
+        </div>
+
+        <!-- ── SERVICE CARD 2 ── -->
+        <div class="service-card" style="--glow:rgba(245,200,66,.12)">
+          <!-- EDIT ICON HERE -->
+          <div class="service-icon" style="background:rgba(245,200,66,.1); border-color:rgba(245,200,66,.2)">💻</div>
+          <!-- EDIT SERVICE TITLE HERE -->
+          <h3 class="service-title">Web Development</h3>
+          <!-- EDIT SERVICE DESCRIPTION HERE -->
+          <p class="service-desc">
+            Go from HTML & CSS basics to building full-stack web apps with
+            React, Node.js, and modern deployment pipelines.
+          </p>
+          <span class="service-num">02</span>
+        </div>
+
+        <!-- ── SERVICE CARD 3 ── -->
+        <div class="service-card" style="--glow:rgba(167,139,250,.12)">
+          <!-- EDIT ICON HERE -->
+          <div class="service-icon" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.2)">📊</div>
+          <!-- EDIT SERVICE TITLE HERE -->
+          <h3 class="service-title">Data & Analytics</h3>
+          <!-- EDIT SERVICE DESCRIPTION HERE -->
+          <p class="service-desc">
+            Turn raw data into compelling stories using Python, SQL,
+            Tableau, and machine learning fundamentals.
+          </p>
+          <span class="service-num">03</span>
+        </div>
+
+        <!-- ── SERVICE CARD 4 ── -->
+        <div class="service-card" style="--glow:rgba(251,113,133,.1)">
+          <!-- EDIT ICON HERE -->
+          <div class="service-icon" style="background:rgba(251,113,133,.1); border-color:rgba(251,113,133,.2)">🚀</div>
+          <!-- EDIT SERVICE TITLE HERE -->
+          <h3 class="service-title">Product Management</h3>
+          <!-- EDIT SERVICE DESCRIPTION HERE -->
+          <p class="service-desc">
+            Learn to define strategy, roadmaps, and metrics — and ship
+            products that users actually love.
+          </p>
+          <span class="service-num">04</span>
+        </div>
+
+        <!-- ── ADD MORE SERVICE CARDS BY DUPLICATING ABOVE ── -->
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 5 – FOOTER
+  ═══════════════════════════════════════ -->
+  <footer id="footer">
+    <div class="footer-inner">
+
+      <!-- EDIT LOGO / BRAND NAME HERE -->
+      <div class="footer-logo">Comet<span>●</span></div>
+
+      <!-- EDIT SOCIAL LINKS HERE — add href="" to each -->
+      <div class="footer-socials">
+        <a href="#" class="social-btn" title="Twitter / X">𝕏</a>
+        <a href="#" class="social-btn" title="Instagram">ig</a>
+        <a href="#" class="social-btn" title="LinkedIn">in</a>
+        <a href="#" class="social-btn" title="YouTube">▶</a>
+      </div>
+
+      <!-- EDIT COPYRIGHT TEXT HERE -->
+      <p class="footer-copy">
+        © 2025 Comet Academy · All rights reserved ·
+        <a href="#" style="color:var(--cyan);">Privacy Policy</a>
+      </p>
+
+    </div>
+  </footer>
+
+
+  <!-- ─────────────────────────────────────────
+       JAVASCRIPT — star field + micro-interactions
+  ───────────────────────────────────────── -->
+  <script>
+    /* ── STAR CANVAS ── */
+    (function () {
+      const canvas = document.getElementById('star-canvas');
+      const ctx    = canvas.getContext('2d');
+      let   stars  = [];
+      const N      = 160;
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = document.body.scrollHeight;
+      }
+      function initStars() {
+        stars = Array.from({ length: N }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.4 + .2,
+          a: Math.random(),
+          speed: Math.random() * .004 + .002,
+          phase: Math.random() * Math.PI * 2,
+        }));
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const t = Date.now() / 1000;
+        stars.forEach(s => {
+          const alpha = .2 + .7 * (0.5 + 0.5 * Math.sin(t * s.speed * 20 + s.phase));
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200,220,255,${alpha})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      resize(); initStars(); draw();
+      window.addEventListener('resize', () => { resize(); initStars(); });
+    })();
+
+    /* ── SCROLL REVEAL ── */
+    (function () {
+      const style = document.createElement('style');
+      style.textContent = `
+        .reveal { opacity:0; transform:translateY(32px); transition:.7s ease; }
+        .reveal.visible { opacity:1; transform:none; }
+      `;
+      document.head.appendChild(style);
+
+      const targets = [
+        ...document.querySelectorAll(
+          '.card, .service-card, .welcome-text, .welcome-img-wrap, .section-title, .section-sub'
+        )
+      ];
+      targets.forEach((el, i) => {
+        el.classList.add('reveal');
+        el.style.transitionDelay = (i % 6) * 80 + 'ms';
+      });
+
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+        });
+      }, { threshold: .12 });
+
+      targets.forEach(el => io.observe(el));
+    })();
+
+    /* ── IMAGE HOVER ZOOM (applied to all .card-img) ── */
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.querySelector('.card-img').style.transform = 'scale(1.07)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.querySelector('.card-img').style.transform = '';
+      });
+    });
+  </script>
+
+</body>
+</html>
